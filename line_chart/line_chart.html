@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+ 
+<head>
+  <meta charset="utf-8">
+  <title>D3 Line Chart</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+ 
+<body>
+  <script>
+  // 1. データの準備
+  var dataset = [
+            { "name": "20180701", "value": 5 },
+            { "name": "20180702", "value": 6 },
+            { "name": "20180703", "value": 8 },
+            { "name": "20180704", "value": 1 },
+            { "name": "20180705", "value": 2 },
+            { "name": "20180706", "value": 6 },
+            { "name": "20180707", "value": 8 },
+            { "name": "20180708", "value": 6 },
+            { "name": "20180709", "value": 10 },
+            { "name": "20180710", "value": 9 }
+        ];
+ 
+  var width = 800; // グラフの幅
+  var height = 500; // グラフの高さ
+  var margin = { "top": 30, "bottom": 60, "right": 40, "left": 60 };
+ 
+//   日付フォーマットの変換（標準に変換）
+  var timeparse = d3.timeParse("%Y%m%e");
+  dataset = dataset.map(function(d){
+      return {name: timeparse(d.name), value: d.value}
+  });
+
+  // 2. SVG領域の設定
+  var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+ 
+  // 3. 軸スケールの設定
+  const xScale = d3.scaleTime()
+    .domain([d3.min(dataset.map(function(d) { return d.name; })), d3.max(dataset.map(function(d){ return d.name; }))])
+    // .domain([20180701,20180710])
+    .range([margin.left,width-margin.right]);
+ 
+  var yScale = d3.scaleLinear()
+    .domain([0, d3.max(dataset, function(d) { return d.value; })])
+    .range([height - margin.bottom, margin.top]);
+ 
+  // 4. 軸の表示
+  var axisx = d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y/%m/%e"));
+  var axisy = d3.axisLeft(yScale).ticks(5);
+ 
+  svg.append("g")
+    .attr("transform", "translate(" + 0 + "," + (height - margin.bottom) + ")")
+    .call(axisx)
+    // .selectAll("text")
+    // .attr("text-anchor", "start")
+    // .attr("transform", "rotate(90)")
+    .append("text")
+    .attr("fill", "black")
+    .attr("x", (width - margin.left - margin.right) / 2 + margin.left)
+    .attr("y", 35)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "10pt")
+    .attr("font-weight", "bold")
+    .text("X Label");
+ 
+  svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + 0 + ")")
+    .call(axisy)
+    .append("text")
+    .attr("fill", "black")
+    .attr("text-anchor", "middle")
+    .attr("x", -(height - margin.top - margin.bottom) / 2 - margin.top)
+    .attr("y", -35)
+    .attr("transform", "rotate(-90)")
+    .attr("font-weight", "bold")
+    .attr("font-size", "10pt")
+    .text("Y Label");
+ 
+  // 5. ラインの表示
+  var line = d3.line()
+    .x(function(d) {return xScale(d.name); })
+    .y(function(d) {return yScale(d.value);});
+
+  svg.append("path")
+    .datum(dataset)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 1.5)
+    .attr("d", line);
+
+//   点を描画
+  svg.selectAll(".c")
+    .data(dataset)
+    .enter()
+    .append("circle")
+    .attr("cx", line.x())
+    .attr("cy", line.y())
+    .attr("r", 5)
+    .attr("fill", "steelblue")
+  </script>
+</body>
+ 
+</html>
